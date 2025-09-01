@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Club Napoli Partenopei Modena — Ordini</title>
+<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;background:#f7f9fc;color:#243b53}header{background:#0e2a47;color:#fff;padding:18px 12px;text-align:center}h1{margin:0;font-size:1.4rem}h2{margin:4px 0 0;font-size:1.05rem;color:#dbeafe}.card{background:#fff;border:1px solid #e3e8ef;border-radius:14px;box-shadow:0 6px 16px rgba(20,20,20,.04);padding:14px;margin:14px}label{font-size:.85rem;color:#627d98;margin-bottom:4px;display:block}input,select{width:100%;padding:10px 12px;border:1px solid #e3e8ef;border-radius:10px}table{width:100%;border-collapse:collapse;min-width:720px}th,td{padding:10px 12px;border-bottom:1px solid #e3e8ef;text-align:left}.actions{display:flex;gap:10px;overflow-x:auto}.as-button{border:1px solid #e3e8ef;border-radius:12px;padding:10px 14px;display:inline-block}.pill{padding:4px 10px;border:1px solid #e3e8ef;border-radius:999px;display:inline-flex;gap:6px;align-items:center}.dot{width:12px;height:12px;border-radius:50%;border:1px solid #c7cdd4}</style>
+</head>
+<body>
+<header><h1>Club Napoli Partenopei Modena</h1><h2>Ordini</h2></header>
+<main class="card">
+<form id="orderForm" autocomplete="off">
+  <input type="hidden" id="editingId" value="">
+  <div style="display:grid;gap:10px;grid-template-columns:1fr">
+    <div><label>Nominativo *</label><input id="nominativo" placeholder="Nome Cognome" required></div>
+    <div><label>Descrizioni</label>
+      <select id="descrizioni">
+        <option>FELPE CLUB</option><option>GIACCA CLUB</option><option>MAGLIA CLUB</option>
+        <option>POLO CLUB</option><option>T-SHIRT CLUB</option><option>MAGLIA ALLENAMENTO</option>
+        <option>MAGLIA CALCIO</option><option>MAGLIA GARA</option><option>K-WAY CLUB</option>
+        <option value="ALTRO">Altro (testo libero)</option>
+      </select>
+      <input id="descrizioni_altro" class="hidden" placeholder="Scrivi qui la descrizione..." style="display:none;margin-top:6px">
+    </div>
+    <div><label>Colore</label>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="dot" id="colorDot" style="width:16px;height:16px"></span>
+        <select id="colore">
+          <option value="Nero" data-hex="#000000">Nero</option><option value="Bianco" data-hex="#ffffff">Bianco</option>
+          <option value="Celeste" data-hex="#87CEEB">Celeste</option><option value="Blu" data-hex="#1E3A8A">Blu</option>
+          <option value="Caffe" data-hex="#6F4E37">Caffe</option><option value="Badge" data-hex="#F1C40F">Badge</option>
+          <option value="Rosa" data-hex="#FFC0CB">Rosa</option>
+        </select>
+      </div>
+    </div>
+    <div><label>Taglia</label><select id="taglia"><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>2XL</option><option>3XL</option><option>4XL</option></select></div>
+    <div><label>Quantità</label><input type="number" id="quantita" min="1" value="1"></div>
+  </div>
+  <div class="actions" style="margin-top:10px">
+    <button type="submit" id="submitBtn">Aggiungi</button>
+    <button type="button" id="resetBtn">Pulisci</button>
+    <button type="button" onclick="exportPDF()">Esporta PDF</button>
+    <button type="button" id="backupBtn">Salva dati</button>
+    <label for="importInput" class="as-button" style="margin-left:auto">Importa dati</label>
+    <input type="file" id="importInput" accept="application/json,.json" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" />
+  </div>
+</form>
+</main>
+<section class="card">
+  <h3>Totali</h3>
+  <div id="totals"></div>
+</section>
+<section class="card">
+  <div style="overflow:auto">
+    <table id="ordersTable"><thead><tr>
+      <th>Nominativo</th><th>Descrizioni</th><th>Colore</th><th>Taglia</th><th>Q.tà</th><th>Azioni</th>
+    </tr></thead><tbody></tbody></table>
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-top:10px"><button id="deleteAllBtn">Elimina tutto</button></div>
+</section>
+<script>
+const NEW_KEY="cnpm-ordini-v16"; const WIPED_KEY="cnpm-ordini-wiped";
+const colorHex={"Nero":"#000000","Bianco":"#ffffff","Celeste":"#87CEEB","Blu":"#1E3A8A","Caffe":"#6F4E37","Badge":"#F1C40F","Rosa":"#FFC0CB"};
+const sizes=["XS","S","M","L","XL","2XL","3XL","4XL"];
+const TYPE_OPTIONS=["FELPE CLUB","GIACCA CLUB","MAGLIA CLUB","POLO CLUB","T-SHIRT CLUB","MAGLIA ALLENAMENTO","MAGLIA CALCIO","MAGLIA GARA","K-WAY CLUB"];
+const FIX_MAP=[[/\bK[-\s]?WAY\s*CLUE\b/gi,"K-WAY CLUB"],[/\bK[-\s]?WAY\s*CLUBB\b/gi,"K-WAY CLUB"],[/\bFELP(E)?\s*CLUB\b/gi,"FELPE CLUB"],[/\bTSHIRT\s*CLUB\b/gi,"T-SHIRT CLUB"]];
+function autoFix(d){let o=(d||"").toString(); for(const [r,x] of FIX_MAP) o=o.replace(r,x); return o;}
+function bySurname(a,b){const S=t=>(t||"").trim().split(/\s+/).slice(-1)[0].toLocaleLowerCase('it'); const sA=S(a.nominativo),sB=S(b.nominativo); return sA===sB?a.nominativo.localeCompare(b.nominativo,'it'):sA.localeCompare(sB,'it');}
+function uid(){return 'id-'+Math.random().toString(36).slice(2)+Date.now().toString(36);}
+function save(d){localStorage.setItem(NEW_KEY,JSON.stringify(d)); localStorage.removeItem(WIPED_KEY);}
+function load(){try{const cur=JSON.parse(localStorage.getItem(NEW_KEY)||"[]"); if(cur&&cur.length) return cur;}catch(e){} if(localStorage.getItem(WIPED_KEY)) return []; return [];}
+function setColorDot(){const sel=document.getElementById('colore'); const dot=document.getElementById('colorDot'); const hex=sel.options[sel.selectedIndex]?.dataset.hex||colorHex[sel.value]||'#ccc'; dot.style.background=hex;}
+function currentDescription(){const sel=document.getElementById('descrizioni'),alt=document.getElementById('descrizioni_altro'); let v=(sel.value==="ALTRO"?(alt.value||""):(sel.value||"")).trim(); return autoFix(v).toUpperCase();}
+function setDescriptionForEdit(desc){const sel=document.getElementById('descrizioni'),alt=document.getElementById('descrizioni_altro'); const up=autoFix(desc||"").toUpperCase(); if(TYPE_OPTIONS.includes(up)){sel.value=up; alt.style.display='none'; alt.value="";} else if(up){sel.value="ALTRO"; alt.style.display='block'; alt.value=up;} else {sel.value=TYPE_OPTIONS[0]; alt.style.display='none'; alt.value="";}}
+let orders=load();
+const form=document.getElementById('orderForm'); const submitBtn=document.getElementById('submitBtn'); const resetBtn=document.getElementById('resetBtn'); const tableBody=document.querySelector('#ordersTable tbody'); const totalsEl=document.getElementById('totals'); const descrSel=document.getElementById('descrizioni'); const descrAlt=document.getElementById('descrizioni_altro');
+document.getElementById('colore').addEventListener('change', setColorDot);
+descrSel.addEventListener('change', ()=>{ descrSel.value==="ALTRO" ? (descrAlt.style.display='block', descrAlt.focus()) : (descrAlt.style.display='none', descrAlt.value=""); });
+function esc(s){return (''+s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("\'","&#39;")}
+function render(){orders=orders.map(o=>({...o,descrizioni:autoFix(o.descrizioni)})); orders.sort(bySurname); tableBody.innerHTML = orders.map(o=>`<tr data-id="${o.id}"><td><strong>${esc(o.nominativo)}</strong></td><td>${esc(o.descrizioni||"")}</td><td><span class="pill"><span class="dot" style="background:${colorHex[o.colore]||'#ccc'}"></span>${o.colore}</span></td><td>${o.taglia}</td><td>${o.quantita}</td><td><button onclick="editOrder('${o.id}')">Modifica</button> <button onclick="deleteOrder('${o.id}')">Elimina</button></td></tr>`).join(''); renderTotals(); save(orders);}
+function extractType(desc){const up=(autoFix(desc)||"").toUpperCase(); for(const k of TYPE_OPTIONS){ if(up.includes(k)) return k; } if(up.includes("T-SHIRT")) return "T-SHIRT CLUB"; if(up.includes("FELPA")||up.includes("FELPE")) return "FELPE CLUB"; return TYPE_OPTIONS[0];}
+function renderTotals(){const grouped={}; for(const o of orders){const tipo=extractType(o.descrizioni); const colore=o.colore||'N/D'; const key=tipo+'|'+colore; if(!grouped[key]) grouped[key]={tipo,colore,total:0,bySize:Object.fromEntries(sizes.map(s=>[s,0]))}; grouped[key].total += Number(o.quantita)||0; grouped[key].bySize[o.taglia]=(grouped[key].bySize[o.taglia]||0)+(Number(o.quantita)||0);} const lines=Object.values(grouped).map(g=>{const parts=sizes.map(s=>{const q=g.bySize[s]||0; return q?`(${q} ${g.tipo} ${s})`:''}).filter(Boolean).join(' - '); return `<div class="total-line">${g.tipo} ${g.colore.toUpperCase()} ${g.total} - <span>${parts||'nessuna taglia'}</span></div>`}); totalsEl.innerHTML = lines.join('') || '<div class="total-line">Nessun ordine inserito</div>';}
+form.addEventListener('submit', e=>{e.preventDefault(); const id=document.getElementById('editingId').value||null; const nominativo=document.getElementById('nominativo').value.trim(); const descrizioni=currentDescription(); const colore=document.getElementById('colore').value; const taglia=document.getElementById('taglia').value; const quantita=Math.max(1, parseInt(document.getElementById('quantita').value||'1',10)); if(!nominativo){alert('Inserisci il nominativo.'); return;} if(!descrizioni){alert('Inserisci la descrizione.'); return;} if(id){const idx=orders.findIndex(o=>o.id===id); if(idx!==-1) orders[idx]={id,nominativo,descrizioni,colore,taglia,quantita}; document.getElementById('editingId').value=''; submitBtn.textContent='Aggiungi';} else {orders.push({id:uid(),nominativo,descrizioni,colore,taglia,quantita});} form.reset(); document.getElementById('quantita').value=1; setColorDot(); descrAlt.style.display='none'; descrAlt.value=""; render();});
+resetBtn.addEventListener('click', ()=>{ form.reset(); document.getElementById('editingId').value=''; submitBtn.textContent='Aggiungi'; document.getElementById('quantita').value=1; setColorDot(); descrAlt.style.display='none'; descrAlt.value=""; });
+window.editOrder=function(id){const o=orders.find(x=>x.id===id); if(!o) return; document.getElementById('editingId').value=o.id; document.getElementById('nominativo').value=o.nominativo; setDescriptionForEdit(o.descrizioni||""); document.getElementById('colore').value=o.colore; document.getElementById('taglia').value=o.taglia; document.getElementById('quantita').value=o.quantita; setColorDot(); submitBtn.textContent='Aggiorna'; window.scrollTo({top:0,behavior:'smooth'}); }
+window.deleteOrder=function(id){const o=orders.find(x=>x.id===id); if(!o) return; if(confirm('Eliminare l\'ordine di: '+o.nominativo+' ?')){ orders=orders.filter(x=>x.id!==id); save(orders); render(); }}
+function exportPDF(){window.print();} window.exportPDF=exportPDF;
+function timestampName(){const d=new Date(); const p=n=>('0'+n).slice(-2); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}`;}
+function doBackup(name){const data=JSON.stringify(orders,null,2); const blob=new Blob([data],{type:'application/json'}); const a=document.createElement('a'); const nm=name||`ordini_cnpm_backup_${timestampName()}.json`; a.href=URL.createObjectURL(blob); a.download=nm; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),0); return nm;}
+document.getElementById('backupBtn').addEventListener('click', ()=>doBackup());
+const importInput=document.getElementById('importInput');
+function getAny(o,keys){for(const k of keys){if(o && (k in o)) return o[k];}}
+function toArrayMaybe(d){if(Array.isArray(d)) return d; if(d && typeof d==='object'){ if(Array.isArray(d.orders)) return d.orders; if(Array.isArray(d.dati)) return d.dati; if(Array.isArray(d.data)) return d.data;} return null;}
+function normRec(raw){const o={}; o.id=getAny(raw,['id','ID','Id'])||uid(); o.nominativo=(getAny(raw,['nominativo','Nominativo','NOME','Nome','nome'])||'').toString().trim(); o.descrizioni=autoFix((getAny(raw,['descrizioni','Descrizioni','descrizione','Descrizione'])||'').toString().toUpperCase()); o.colore=(getAny(raw,['colore','Colore'])||'').toString(); o.taglia=(getAny(raw,['taglia','Taglia'])||'').toString(); let q=getAny(raw,['quantita','Quantita','Quantità','quantità','qty','Qty']); o.quantita=Number(q)||1; return o;}
+importInput.addEventListener('change',(ev)=>{const f=ev.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{try{let parsed=JSON.parse(rd.result||"[]"); const arr=toArrayMaybe(parsed); if(!arr) throw new Error('Formato non valido: atteso un array o un oggetto con "orders".'); let added=0,updated=0; const byId=new Map(orders.map(o=>[o.id,o])); const keyOf=r=>(r.nominativo+'|'+r.descrizioni+'|'+r.colore+'|'+r.taglia); const seen=new Set(orders.map(keyOf)); for(const it of arr){const o=normRec(it); if(!o.nominativo||!o.descrizioni) continue; if(byId.has(o.id)){const ix=orders.findIndex(x=>x.id===o.id); if(ix!==-1) orders[ix]=o; updated++;} else {const k=keyOf(o); if(!seen.has(k)){orders.push(o); added++; seen.add(k); byId.set(o.id,o);} else {const ix=orders.findIndex(x=>keyOf(x)===k); if(ix!==-1){orders[ix]={...orders[ix],quantita:o.quantita}; updated++;}}}} save(orders); render(); alert(`Import completato. Aggiunti: ${added}, Aggiornati: ${updated}.`);}catch(err){alert('Errore import: '+err.message);} finally {ev.target.value='';}}; rd.readAsText(f);});
+document.getElementById('deleteAllBtn').addEventListener('click', ()=>{ if(!orders.length){alert('Non ci sono ordini da eliminare.'); return;} const first=confirm('ATTENZIONE: verranno eliminati TUTTI gli ordini. Vuoi procedere?'); if(!first) return; const nm=doBackup(`ordini_cnpm_backup_${timestampName()}.json`); const second=confirm('Backup scaricato: '+nm+'\n\nConfermi l\'eliminazione definitiva di TUTTI gli ordini?'); if(!second) return; orders=[]; localStorage.setItem('cnpm-ordini-wiped','1'); localStorage.setItem(NEW_KEY, JSON.stringify(orders)); render(); alert('Tutti gli ordini sono stati eliminati. Resteranno vuoti finché non importi un backup.');});
+setColorDot(); render();
+</script>
+</body>
+</html>
