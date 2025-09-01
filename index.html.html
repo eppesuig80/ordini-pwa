@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Club Napoli Partenopei Modena — Ordini</title>
+  <style>
+    :root { --primary:#0e2a47; --accent:#3a6ea5; --light:#f7f9fc; --border:#e3e8ef; --text:#243b53; --muted:#627d98; --danger:#ef4444; }
+    * { box-sizing:border-box }
+    html, body { margin:0; padding:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:var(--text); background:#f7f9fc;}
+    header { background: linear-gradient(180deg, var(--primary), #163a63); color:#fff; padding:22px 16px; text-align:center; border-bottom:4px solid #0b1e33;}
+    header .title-wrap{display:flex; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap}
+    header img{ width:78px; height:78px; object-fit:contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,.25)); background:transparent; border-radius:50%}
+    h1{ margin:.2rem 0 0; font-size:clamp(1.2rem, 2.4vw + .6rem, 1.8rem); letter-spacing:.5px; }
+    h2{ margin:.4rem 0 0; font-weight:600; color:#dbeafe; letter-spacing:.4px; font-size:clamp(1rem, 2vw + .4rem, 1.3rem);}
+    main{ max-width:1100px; margin:18px auto; padding:0 14px 48px; }
+    .card{ background:#fff; border:1px solid var(--border); border-radius:16px; box-shadow: 0 6px 16px rgba(20, 20, 20, .04); padding:16px; }
+    .grid{ display:grid; grid-template-columns:1fr; gap:14px; }
+    @media(min-width: 720px){ .grid{ grid-template-columns: 1.1fr 1fr; } }
+    form .row{ display:grid; grid-template-columns:1fr; gap:10px; }
+    @media(min-width:680px){ form .row{ grid-template-columns: 2fr 2fr 1fr 1fr 1fr; } }
+    label{ font-size:.85rem; color:var(--muted); margin-bottom:4px; display:block; }
+    input[type="text"], select, input[type="number"]{ width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:#fff; font-size:1rem; outline:none; }
+    .actions{ display:flex; align-items:center; gap:10px; flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px; }
+    .actions > *{ flex:0 0 auto; }
+    .ml-auto{ margin-left:auto; }
+    button, .as-button{ border:none; padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600; letter-spacing:.2px; background:var(--accent); color:#fff; box-shadow: 0 4px 10px rgba(58,110,165,.25); display:inline-block; }
+    button.secondary, .as-button.secondary{ background:#fff; color:var(--text); border:1px solid var(--border); box-shadow:none; }
+    button.danger{ background:var(--danger); color:#fff; }
+    .color-picker{ display:flex; align-items:center; gap:10px; }
+    .dot{ width:16px; height:16px; border-radius:50%; border:1px solid #c7cdd4; flex:0 0 16px; }
+    .table-wrap{ overflow:auto; border:1px solid var(--border); border-radius:16px; background:#fff; }
+    table{ width:100%; border-collapse:collapse; min-width:720px; }
+    thead tr{ background:#f1f5f9; }
+    th, td{ padding:12px; text-align:left; border-bottom:1px solid var(--border); vertical-align:top; }
+    tbody tr:hover{ background:#f9fbfd; }
+    .pill{ padding:4px 10px; border-radius:999px; border:1px solid var(--border); display:inline-flex; align-items:center; gap:6px; background:#fff; }
+    .pill .dot{ width:12px; height:12px; }
+    .muted{ color:var(--muted); }
+    .totals{ margin-top:12px; display:grid; gap:10px; }
+    .total-line{ background:#fff; border:1px dashed var(--border); border-radius:12px; padding:10px 12px; font-weight:700; }
+    .total-line span{ font-weight:600; color:var(--muted);}
+    .hidden{ display:none; }
+    .row-actions{ display:flex; justify-content:space-between; align-items:center; gap:8px; width:100%; }
+    .row-actions .danger{ margin-left:auto; }
+    .tick{ margin-left:8px; border:1px solid var(--border); background:#fff; border-radius:999px; padding:2px 8px; line-height:1; cursor:pointer; }
+    tbody tr.done td{ color:#b91c1c; text-decoration: line-through; }
+    tbody tr.done .pill{ border-color:#fca5a5; }
+    tbody tr.done .tick{ background:#fee2e2; border-color:#fca5a5; }
+    .bottom-actions{ margin-top:14px; display:flex; justify-content:flex-end; }
+    .bottom-actions .danger{ min-width:160px; }
+    @media print {
+      .no-print { display:none !important; }
+      header { background:#fff !important; color:#000 !important; border:none !important; padding:12px 16px !important; }
+      header img { filter:none !important; }
+      h2 { color:#000 !important; }
+      body { background:#fff; }
+      .table-wrap { border:none; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .pill { background:#fff !important; border:1px solid #aab4bf !important; }
+      .dot { border:1px solid #555 !important; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title-wrap">
+      <img alt="Logo Club Napoli Partenopei Modena" src="data:image/png;base64,{LOGO_B64}">
+      <div>
+        <h1>Club Napoli Partenopei Modena</h1>
+        <h2>Ordini</h2>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid no-print" style="margin-top:12px;">
+      <section class="card" id="formCard">
+        <h3 style="margin:0 0 10px;">Inserisci ordine</h3>
+        <form id="orderForm" autocomplete="off">
+          <input type="hidden" id="editingId" value="">
+          <div class="row">
+            <div>
+              <label for="nominativo">Nominativo *</label>
+              <input type="text" id="nominativo" placeholder="Nome Cognome" required>
+            </div>
+            <div>
+              <label for="descrizioni">Descrizioni</label>
+              <select id="descrizioni">
+                <option>FELPE CLUB</option>
+                <option>GIACCA CLUB</option>
+                <option>MAGLIA CLUB</option>
+                <option>POLO CLUB</option>
+                <option>T-SHIRT CLUB</option>
+                <option>MAGLIA ALLENAMENTO</option>
+                <option>MAGLIA CALCIO</option>
+                <option>MAGLIA GARA</option>
+                <option>K-WAY CLUB</option>
+                <option value="ALTRO">Altro (testo libero)</option>
+              </select>
+              <input class="hidden" type="text" id="descrizioni_altro" placeholder="Scrivi qui la descrizione..." />
+            </div>
+            <div>
+              <label for="colore">Colore</label>
+              <div class="color-picker">
+                <span class="dot" id="colorDot"></span>
+                <select id="colore">
+                  <option value="Nero" data-hex="#000000">Nero</option>
+                  <option value="Bianco" data-hex="#ffffff">Bianco</option>
+                  <option value="Celeste" data-hex="#87CEEB">Celeste</option>
+                  <option value="Blu" data-hex="#1E3A8A">Blu</option>
+                  <option value="Caffe" data-hex="#6F4E37">Caffe</option>
+                  <option value="Badge" data-hex="#F1C40F">Badge</option>
+                  <option value="Rosa" data-hex="#FFC0CB">Rosa</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label for="taglia">Taglia</label>
+              <select id="taglia">
+                <option>XS</option><option>S</option><option>M</option><option>L</option>
+                <option>XL</option><option>2XL</option><option>3XL</option><option>4XL</option>
+              </select>
+            </div>
+            <div>
+              <label for="quantita">Quantità</label>
+              <input type="number" id="quantita" min="1" value="1">
+            </div>
+          </div>
+          <div class="actions">
+            <button type="submit" id="submitBtn">Aggiungi</button>
+            <button type="button" class="secondary no-print" id="resetBtn">Pulisci</button>
+            <button type="button" class="secondary no-print" onclick="exportPDF()">Esporta PDF</button>
+            <button type="button" class="secondary no-print" id="backupBtn">Salva dati</button>
+            <label for="importInput" class="as-button secondary no-print ml-auto" id="importBtn">Importa dati</label>
+            <input type="file" id="importInput" accept="application/json,.json" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;" />
+          </div>
+          <p class="muted" style="margin-top:6px;">Salvataggio automatico attivo. Puoi anche salvare/importare un backup.</p>
+        </form>
+      </section>
+
+      <section class="card">
+        <h3 style="margin:0 0 10px;">Totali</h3>
+        <div id="totals" class="totals"></div>
+      </section>
+    </div>
+
+    <section style="margin-top:16px;">
+      <div class="table-wrap">
+        <table id="ordersTable">
+          <thead>
+            <tr>
+              <th style="width:22%;">Nominativo</th>
+              <th style="width:30%;">Descrizioni</th>
+              <th style="width:14%;">Colore</th>
+              <th style="width:10%;">Taglia</th>
+              <th style="width:8%;">Q.tà</th>
+              <th style="width:16%;" class="no-print">Azioni</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="bottom-actions no-print">
+        <button type="button" class="danger" id="deleteAllBtn">Elimina tutto</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const NEW_KEY = "cnpm-ordini-v17"; // include campo 'done'
+    const WIPED_KEY = "cnpm-ordini-wiped";
+    const colorHex = {"Nero":"#000000","Bianco":"#ffffff","Celeste":"#87CEEB","Blu":"#1E3A8A","Caffe":"#6F4E37","Badge":"#F1C40F","Rosa":"#FFC0CB"};
+    const sizes = ["XS","S","M","L","XL","2XL","3XL","4XL"];
+    const colorAdj = {"Celeste":"AZZURRE","Blu":"BLU","Nero":"NERE","Bianco":"BIANCHE","Caffe":"CAFFÈ","Badge":"BADGE","Rosa":"ROSA"};
+    const TYPE_OPTIONS = ["FELPE CLUB","GIACCA CLUB","MAGLIA CLUB","POLO CLUB","T-SHIRT CLUB","MAGLIA ALLENAMENTO","MAGLIA CALCIO","MAGLIA GARA","K-WAY CLUB"];
+    const FIX_MAP = [[/\bK[-\s]?WAY\s*CLUE\b/gi,"K-WAY CLUB"],[/\bK[-\s]?WAY\s*CLUBB\b/gi,"K-WAY CLUB"],[/\bFELP(E)?\s*CLUB\b/gi,"FELPE CLUB"],[/\bTSHIRT\s*CLUB\b/gi,"T-SHIRT CLUB"]];
+    function autoFix(desc){ let out=(desc||"").toString(); for(const [re,repl] of FIX_MAP) out=out.replace(re,repl); return out; }
+    function bySurname(a,b){ const S=t=>(t||"").trim().split(/\s+/).slice(-1)[0].toLocaleLowerCase('it'); const sA=S(a.nominativo), sB=S(b.nominativo); if(sA===sB) return a.nominativo.localeCompare(b.nominativo,'it'); return sA.localeCompare(sB,'it'); }
+    function uid(){ return 'id-'+Math.random().toString(36).slice(2)+Date.now().toString(36); }
+    function save(d){ localStorage.setItem(NEW_KEY, JSON.stringify(d)); localStorage.removeItem(WIPED_KEY); }
+    function load(){ try{ const cur=JSON.parse(localStorage.getItem(NEW_KEY)||"[]"); if(cur&&cur.length) return cur; }catch(e){} if(localStorage.getItem(WIPED_KEY)){ return []; } return []; }
+    function setColorDot(){ const sel=document.getElementById('colore'); const dot=document.getElementById('colorDot'); const hex=sel.options[sel.selectedIndex]?.dataset.hex || colorHex[sel.value] || '#ccc'; dot.style.background=hex; }
+    function currentDescription(){ const sel=document.getElementById('descrizioni'); const alt=document.getElementById('descrizioni_altro'); let v=(sel.value==="ALTRO"?(alt.value||""):(sel.value||"")).trim(); v=autoFix(v).toUpperCase(); return v; }
+    function setDescriptionForEdit(desc){ const sel=document.getElementById('descrizioni'); const alt=document.getElementById('descrizioni_altro'); const up=autoFix(desc||"").toUpperCase(); if(TYPE_OPTIONS.includes(up)){ sel.value=up; alt.classList.add('hidden'); alt.value=""; } else if(up){ sel.value="ALTRO"; alt.classList.remove('hidden'); alt.value=up; } else { sel.value=TYPE_OPTIONS[0]; alt.classList.add('hidden'); alt.value=""; } }
+    let orders=[];
+    const form=document.getElementById('orderForm'); const submitBtn=document.getElementById('submitBtn'); const resetBtn=document.getElementById('resetBtn'); const tableBody=document.querySelector('#ordersTable tbody'); const totalsEl=document.getElementById('totals'); const descrSel=document.getElementById('descrizioni'); const descrAlt=document.getElementById('descrizioni_altro');
+    document.getElementById('colore').addEventListener('change', setColorDot);
+    descrSel.addEventListener('change', ()=>{ if(descrSel.value==="ALTRO"){ descrAlt.classList.remove('hidden'); descrAlt.focus(); } else { descrAlt.classList.add('hidden'); descrAlt.value=""; } });
+    function esc(s){return (''+s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("\'","&#39;")}
+    function render(){ orders=orders.map(o=>({...o, descrizioni:autoFix(o.descrizioni)})); orders.sort(bySurname); tableBody.innerHTML=orders.map(o=>`
+        <tr data-id="${o.id}" class="${o.done?'done':''}">
+          <td><strong>${esc(o.nominativo)}</strong> <button class="tick no-print" onclick="toggleDone('${o.id}')" title="${o.done?'Annulla spunta':'Spunta'}">✅</button></td>
+          <td>${esc(o.descrizioni||"")}</td>
+          <td><span class="pill"><span class="dot" style="background:${colorHex[o.colore]||'#ccc'}"></span>${o.colore}</span></td>
+          <td>${o.taglia}</td>
+          <td>${o.quantita}</td>
+          <td class="no-print">
+            <div class="row-actions">
+              <button onclick="editOrder('${o.id}')">Modifica</button>
+              <button class="danger" onclick="deleteOrder('${o.id}')">Elimina</button>
+            </div>
+          </td>
+        </tr>
+      `).join(''); renderTotals(); save(orders); }
+    function extractType(desc){ const up=(autoFix(desc)||"").toUpperCase(); for(const k of TYPE_OPTIONS){ if(up.includes(k)) return k; } if(up.includes("T-SHIRT")) return "T-SHIRT CLUB"; if(up.includes("FELPA")||up.includes("FELPE")) return "FELPE CLUB"; return TYPE_OPTIONS[0]; }
+    function renderTotals(){ const grouped={}; for(const o of orders){ const tipo=extractType(o.descrizioni); const colore=o.colore||'N/D'; const key=tipo+'|'+colore; if(!grouped[key]) grouped[key]={ tipo, colore, total:0, bySize:Object.fromEntries(sizes.map(s=>[s,0])) }; grouped[key].total += Number(o.quantita)||0; grouped[key].bySize[o.taglia]=(grouped[key].bySize[o.taglia]||0)+(Number(o.quantita)||0); } const lines=Object.values(grouped).map(g=>{ const adj=colorAdj[g.colore]||g.colore.toUpperCase(); const parts=sizes.map(s=>{ const q=g.bySize[s]||0; if(q<=0) return ''; return `(${q} ${g.tipo} ${s})`; }).filter(Boolean).join(' - '); return `<div class="total-line">${g.tipo} ${adj} ${g.total} - <span>${parts||'nessuna taglia'}</span></div>`; }); totalsEl.innerHTML = lines.join('') || '<div class="total-line">Nessun ordine inserito</div>'; }
+    form.addEventListener('submit', e=>{ e.preventDefault(); const id=document.getElementById('editingId').value||null; const nominativo=document.getElementById('nominativo').value.trim(); const descrizioni=currentDescription(); const colore=document.getElementById('colore').value; const taglia=document.getElementById('taglia').value; const quantita=Math.max(1, parseInt(document.getElementById('quantita').value||'1',10)); if(!nominativo){ alert('Inserisci il nominativo.'); return; } if(!descrizioni){ alert('Inserisci la descrizione.'); return; } if(id){ const idx=orders.findIndex(o=>o.id===id); if(idx!==-1) orders[idx]={...orders[idx], nominativo, descrizioni, colore, taglia, quantita}; document.getElementById('editingId').value=''; submitBtn.textContent='Aggiungi'; } else { orders.push({id:uid(), nominativo, descrizioni, colore, taglia, quantita, done:false}); } form.reset(); document.getElementById('quantita').value=1; setColorDot(); descrAlt.classList.add('hidden'); descrAlt.value=""; render(); });
+    resetBtn.addEventListener('click', ()=>{ form.reset(); document.getElementById('editingId').value=''; submitBtn.textContent='Aggiungi'; document.getElementById('quantita').value=1; setColorDot(); descrAlt.classList.add('hidden'); descrAlt.value=""; });
+    window.editOrder=function(id){ const o=orders.find(x=>x.id===id); if(!o) return; document.getElementById('editingId').value=o.id; document.getElementById('nominativo').value=o.nominativo; setDescriptionForEdit(o.descrizioni||""); document.getElementById('colore').value=o.colore; document.getElementById('taglia').value=o.taglia; document.getElementById('quantita').value=o.quantita; setColorDot(); submitBtn.textContent='Aggiorna'; document.getElementById('nominativo').focus(); document.getElementById('formCard').scrollIntoView({behavior:'smooth', block:'start'}); }
+    window.deleteOrder=function(id){ const o=orders.find(x=>x.id===id); if(!o) return; if(confirm('Eliminare l\'ordine di: '+o.nominativo+' ?')){ orders=orders.filter(x=>x.id!==id); save(orders); render(); } }
+    window.toggleDone=function(id){ const ix=orders.findIndex(o=>o.id===id); if(ix===-1) return; orders[ix].done = !orders[ix].done; save(orders); render(); }
+    function exportPDF(){ window.print(); } window.exportPDF=exportPDF;
+    function timestampName(){ const d=new Date(); const pad=n=>('0'+n).slice(-2); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}`; }
+    function doBackup(explicitName){ const data=JSON.stringify(orders, null, 2); const blob=new Blob([data], {type:'application/json'}); const a=document.createElement('a'); const name=explicitName||`ordini_cnpm_backup_${timestampName()}.json`; a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),0); return name; }
+    document.getElementById('backupBtn').addEventListener('click', ()=>{ doBackup(); });
+    function getAny(obj, keys){ for(const k of keys){ if(obj && (k in obj)) return obj[k]; } return undefined; }
+    function autoFixDesc(v){ return autoFix((v||'').toString().trim().toUpperCase()); }
+    function normRec(raw){ const o={}; o.id=getAny(raw,['id','ID','Id'])||uid(); o.nominativo=(getAny(raw,['nominativo','Nominativo','NOME','Nome','nome'])||'').toString().trim(); o.descrizioni=autoFixDesc(getAny(raw,['descrizioni','Descrizioni','descrizione','Descrizione'])); o.colore=(getAny(raw,['colore','Colore'])||'').toString(); o.taglia=(getAny(raw,['taglia','Taglia'])||'').toString(); let q=getAny(raw,['quantita','Quantita','Quantità','quantità','qty','Qty']); q=Number(q)||1; o.quantita=q; if(typeof raw.done==='boolean') o.done=raw.done; else o.done=false; return o; }
+    function toArrayMaybe(data){ if(Array.isArray(data)) return data; if(data && typeof data==='object'){ if(Array.isArray(data.orders)) return data.orders; if(Array.isArray(data.dati)) return data.dati; if(Array.isArray(data.data)) return data.data; } return null; }
+    const importInput=document.getElementById('importInput');
+    importInput.addEventListener('change', (ev)=>{ const file=ev.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=()=>{ try{ let parsed=JSON.parse(reader.result||"[]"); const arr=toArrayMaybe(parsed); if(!arr) throw new Error('Formato non valido: atteso un array o un oggetto con "orders".'); let added=0, updated=0; const byId=new Map(orders.map(o=>[o.id,o])); const keyOf=r=>(r.nominativo+'|'+r.descrizioni+'|'+r.colore+'|'+r.taglia); const seenKeys=new Set(orders.map(keyOf)); for(const item of arr){ const o=normRec(item); if(!o.nominativo||!o.descrizioni) continue; if(byId.has(o.id)){ const ix=orders.findIndex(x=>x.id===o.id); if(ix!==-1) orders[ix]=o; updated++; } else { const k=keyOf(o); if(!seenKeys.has(k)){ orders.push(o); added++; seenKeys.add(k); byId.set(o.id,o); } else { const ix=orders.findIndex(x=>keyOf(x)===k); if(ix!==-1){ orders[ix]={...orders[ix], quantita:o.quantita, done:o.done}; updated++; } } } } save(orders); render(); alert(`Import completato. Aggiunti: ${added}, Aggiornati: ${updated}.`); } catch(err){ alert('Errore import: '+ err.message); } finally { ev.target.value=''; } }; reader.readAsText(file); });
+    document.getElementById('deleteAllBtn').addEventListener('click', ()=>{ if(!orders.length){ alert('Non ci sono ordini da eliminare.'); return; } const first=confirm('ATTENZIONE: verranno eliminati TUTTI gli ordini. Vuoi procedere?'); if(!first) return; const fileName=`ordini_cnpm_backup_${timestampName()}.json`; doBackup(fileName); const second=confirm('Backup scaricato: '+fileName+'\n\nConfermi l\'eliminazione definitiva di TUTTI gli ordini?'); if(!second) return; orders=[]; localStorage.setItem('cnpm-ordini-wiped','1'); localStorage.setItem(NEW_KEY, JSON.stringify(orders)); render(); alert('Tutti gli ordini sono stati eliminati. Resteranno vuoti finché non importi un backup.'); });
+    setColorDot(); render();
+  </script>
+</body>
+</html>
